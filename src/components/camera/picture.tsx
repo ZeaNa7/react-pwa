@@ -7,7 +7,7 @@ const PictureComponent: React.FC = () => {
     <>
       {pictureStore.photos?.map((photo, index) => (
         <div key={index}>
-          <img src={photo} alt={`Captured ${index + 1}`} />
+          <img src={photo} width="50%" height="auto" />
         </div>
       ))}
     </>

@@ -1,24 +1,16 @@
-import { createBrowserRouter } from 'react-router-dom';
-import CameraPage from './components/pages/camera-page';
-import HomePage from './components/pages/home-page';
-import PicturePage from './components/pages/picture-page';
-import MapPage from './components/pages/map-page';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import CameraPage from './pages/camera-page';
+import HomePage from './pages/home-page';
+import PicturePage from './pages/picture-page';
+import MapPage from './pages/map-page';
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <HomePage />,
-  },
-  {
-    path: '/camera',
-    element: <CameraPage />,
-  },
-  {
-    path: '/pictures',
-    element: <PicturePage />,
-  },
-  {
-    path: '/map',
-    element: <MapPage />,
-  },
-]);
+export const AppRouter = () => (
+  <Router>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/camera" element={<CameraPage />} />
+      <Route path="/picture" element={<PicturePage />} />
+      <Route path="/map" element={<MapPage />} />
+    </Routes>
+  </Router>
+);

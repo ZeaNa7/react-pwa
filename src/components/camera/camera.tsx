@@ -1,13 +1,67 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import pictureStore from '../stores/picture.store';
 
 const CameraComponent: React.FC = () => {
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [pictures, setPictures] = useState<string[]>([]);
+  const [videos, setVideos] = useState<string[]>([]);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const startCamera = () => {
+  const takePhoto = () => {
+    if (canvasRef.current && videoRef.current) {
+      const context = canvasRef.current.getContext('2d');
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const data = canvas.toDataURL('image/png');
+      setPictures((prevPhotos) => [...prevPhotos, data]);
+      const dataa = data;
+      pictureStore.setPhotos([...(pictureStore.photos || []), dataa]);
+    }
+  };
+
+  const startRecording = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'video/mp4' });
+        const videoURL = URL.createObjectURL(blob);
+        setVideos((prevPhotos) => [...prevPhotos, videoURL]);
+        const blobCopy = blob;
+        // pictureStore.setVideos([...(pictureStore.videos || []), blobCopy]);
+        chunksRef.current = [];
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
@@ -18,73 +72,48 @@ const CameraComponent: React.FC = () => {
       .catch((error) => {
         console.error('Error accessing camera:', error);
       });
-  };
-
-  const stopCamera = () => {
-    const stream = videoRef.current?.srcObject as MediaStream;
-    if (stream) {
-      const tracks = stream.getTracks();
-      tracks.forEach((track) => {
-        track.stop();
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-    }
-  };
-
-  const takePhoto = () => {
-    if (canvasRef.current && videoRef.current) {
-      const context = canvasRef.current.getContext('2d');
-      context?.drawImage(videoRef.current, 0, 0, 300, 200);
-      const data = canvasRef.current.toDataURL('image/png');
-      setPhotos((prevPhotos) => [...prevPhotos, data]);
-      const dataa = data;
-      pictureStore.setPhotos([...(pictureStore.photos || []), dataa]);
-      stopCamera();
-    }
-  };
+  }, []);
 
   useEffect(() => {
     const storedPhotos = localStorage.getItem('capturedPhotos');
     if (storedPhotos) {
-      setPhotos(JSON.parse(storedPhotos));
+      setPictures(JSON.parse(storedPhotos));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('capturedPhotos', JSON.stringify(photos));
-  }, [photos]);
-
-  const groupedPhotos = photos.reduce<string[][]>((acc, photo, index) => {
-    const groupIndex = Math.floor(index / 3);
-    if (!acc[groupIndex]) {
-      acc[groupIndex] = [];
-    }
-    acc[groupIndex].push(photo);
-    return acc;
-  }, []);
+    localStorage.setItem('capturedPhotos', JSON.stringify(pictures));
+  }, [pictures]);
 
   return (
     <div>
-      <div className="m-8">
-        <Button variant="outlined" onClick={startCamera}>
-          Start Camera
-        </Button>
+      <video ref={videoRef} width="50%" height="auto" autoPlay></video>
+      <canvas ref={canvasRef} style={{ display: 'none', width: '100%', height: 'auto' }}></canvas>
+
+      <div className="m-10">
         <Button variant="outlined" onClick={takePhoto}>
           Take Photo
         </Button>
+        {!isRecording ? (
+          <Button variant="outlined" onClick={startRecording}>
+            Start Recording
+          </Button>
+        ) : (
+          <Button variant="outlined" onClick={stopRecording}>
+            Stop Recording
+          </Button>
+        )}
       </div>
 
-      <video ref={videoRef} width="300" height="200" autoPlay></video>
-      <canvas ref={canvasRef} style={{ display: 'none' }} width="300" height="200"></canvas>
-      {groupedPhotos.map((row, rowIndex) => (
-        <div key={rowIndex} style={{ display: 'flex' }}>
-          {row.map((photo, index) => (
-            <div key={index}>
-              <img src={photo} alt={`Captured ${rowIndex * 3 + index + 1}`} width="300" />
-            </div>
-          ))}
+      {pictures.map((photo, index) => (
+        <div key={index} style={{ display: 'flex' }}>
+          <img src={photo} alt="captured" width="50%" height="auto"/>
+        </div>
+      ))}
+
+      {videos.map((videoURL, index) => (
+        <div key={index}>
+          <video src={videoURL} controls width="50%" height="auto"></video>
         </div>
       ))}
     </div>

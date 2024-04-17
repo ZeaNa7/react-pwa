@@ -1,4 +1,4 @@
-import CameraComponent from '../camera/camera';
+import CameraComponent from '../components/camera/camera';
 import Navbar from '../layouts/navbar';
 
 function CameraPage() {

@@ -1,0 +1,13 @@
+import type { Config } from 'tailwindcss';
+export default {
+  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  theme: {
+    extend: {},
+  },
+  colors: {
+     'pale-green': '#c5e2d8',
+     'pale-orange': '#f39e79',
+     'pale-white': '#fefefe',
+  },
+  plugins: [],
+} satisfies Partial<Config>;

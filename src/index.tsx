@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import './index.css';
-import { router } from './router';
+import { AppRouter } from './router';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './utils/theme.utils';
@@ -13,7 +13,7 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <RouterProvider router={router} />
+      <AppRouter />
     </ThemeProvider>
   </React.StrictMode>,
 );
@@ -21,4 +21,4 @@ root.render(
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register();
+serviceWorkerRegistration.unregister();

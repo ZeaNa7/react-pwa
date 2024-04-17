@@ -1,5 +1,5 @@
 import Navbar from '../layouts/navbar';
-import MapComponent from '../map/map';
+import MapComponent from '../components/map/map';
 
 function MapPage() {
   return (

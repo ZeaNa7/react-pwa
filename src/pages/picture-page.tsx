@@ -1,4 +1,4 @@
-import Picture from '../camera/picture';
+import Picture from '../components/camera/picture';
 import Navbar from '../layouts/navbar';
 
 function PicturePage() {
